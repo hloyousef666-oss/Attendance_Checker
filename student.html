@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Dashboard — Smart Attendance Checker</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- Local QR Scanner Library -->
+<script src="js/html5-qrcode.min.js"></script>
+<style>
+/* Fullscreen QR Scanner Overlay */
+#qrPopup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  flex-direction: column;
+}
+
+.qr-box {
+  background: #000;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+}
+
+#reader {
+  width: 100%;
+  height: 360px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.close-text {
+  color: #aaa;
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+</style>
+</head>
+<body class="page-bg">
+<header class="nav">
+<div class="nav-left">
+<div class="logo">SA</div>
+<div class="brand-text">
+<div class="brand-title">Smart Attendance Checker</div>
+<div class="brand-sub">Student Dashboard</div>
+</div>
+</div>
+<nav class="nav-right">
+<a class="nav-link" href="login.html">Logout</a>
+</nav>
+</header>
+
+<main class="container center-col">
+  <div class="card auth-card" style="max-width:720px;">
+    <h1 class="h1">Student Dashboard</h1>
+    <p class="muted">Scan the session QR code using your device camera to record attendance.</p>
+
+    <div class="student-actions">
+      <div class="scan-area card">
+        <div class="scan-placeholder">Camera view / QR area (design)</div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="scanBtn">Scan QR</button>
+        <button class="btn btn-outline">Attendance History</button>
+      </div>
+
+      <div class="confirmation card" style="margin-top:16px;display:none" id="confirm">
+        <strong>Attendance Recorded Successfully</strong>
+        <div class="muted">This confirmation appears after a successful scan.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card small" style="max-width:720px;margin-top:18px">
+    <h3>Recent Attendance</h3>
+    <div class="muted">Preview of recent attendance records (design only).</div>
+    <ul class="bullets" style="margin-top:8px">
+      <li>2025-10-18 — Present</li>
+      <li>2025-10-11 — Absent</li>
+      <li>2025-10-04 — Present</li>
+    </ul>
+  </div>
+</main>
+
+<!-- QR Popup -->
+<div id="qrPopup">
+  <div class="qr-box">
+    <div id="reader"></div>
+    <p class="close-text">Tap anywhere outside to close</p>
+  </div>
+</div>
+
+<footer class="footer">&copy; <span id="year3">2025</span> Smart Attendance Checker</footer>
+
+<script>
+document.getElementById('year3').textContent = new Date().getFullYear();
+
+const scanBtn = document.getElementById('scanBtn');
+const qrPopup = document.getElementById('qrPopup');
+const confirmMsg = document.getElementById('confirm');
+let html5QrCode;
+
+// Open camera and start scanning
+scanBtn.addEventListener('click', async () => {
+  qrPopup.style.display = 'flex';
+  html5QrCode = new Html5Qrcode("reader");
+  
+  try {
+    await html5QrCode.start(
+      { facingMode: "environment" }, // rear camera
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      qrCodeMessage => {
+        console.log("QR Scanned:", qrCodeMessage);
+        html5QrCode.stop().then(() => {
+          qrPopup.style.display = 'none';
+          confirmMsg.style.display = 'block';
+        });
+      },
+      errorMessage => {}
+    );
+  } catch (err) {
+    alert("Unable to access camera. Please allow camera permissions.");
+    console.error("Camera error:", err);
+  }
+});
+
+// Close popup when clicking outside
+qrPopup.addEventListener('click', e => {
+  if (e.target === qrPopup) {
+    qrPopup.style.display = 'none';
+    if (html5QrCode) html5QrCode.stop().catch(()=>{});
+  }
+});
+</script>
+</body>
+</html>

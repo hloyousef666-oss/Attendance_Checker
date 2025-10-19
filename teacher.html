@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Teacher Dashboard — Smart Attendance Checker</title>
+<link rel="stylesheet" href="style.css">
+<script src="js/qrcode.min.js"></script>
+</head>
+
+
+
+<body class="page-bg">
+<header class="nav">
+  <div class="nav-left">
+    <div class="logo">SA</div>
+    <div class="brand-text">
+      <div class="brand-title">Smart Attendance Checker</div>
+      <div class="brand-sub">Teacher Dashboard</div>
+    </div>
+  </div>
+  <nav class="nav-right">
+    <a class="nav-link" href="login.html">Logout</a>
+  </nav>
+</header>
+
+<main class="container">
+  <aside class="sidebar">
+    <div class="card small">
+      <h3>Navigation</h3>
+      <ul class="side-list">
+        <li class="active">Dashboard</li>
+        <li>Generate QR</li>
+        <li>View Attendance</li>
+        <li>End Session</li>
+      </ul>
+    </div>
+
+    <div class="card small">
+      <h3>Session</h3>
+      <div id="session-status" class="muted">No active session</div>
+      <div style="margin-top:12px">
+        <div class="chip" id="last-generated">Last generated: —</div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="content">
+    <div class="card">
+      <div class="content-header">
+        <h1 class="h1">Dashboard</h1>
+        <div class="muted">Teacher — Manage sessions and view attendance in real time.</div>
+      </div>
+
+      <div class="grid-tiles">
+        <div class="tile">
+          <h4>Generate Session QR</h4>
+          <p class="muted">Create a unique QR code for the current class session.</p>
+          <div style="margin-top:12px">
+            <input type="text" id="className" class="input" placeholder="Enter Class Name" required>
+            <input type="date" id="classDate" class="input" required>
+            <input type="time" id="classTime" class="input" required>
+            <button id="generateBtn" class="btn btn-primary" style="margin-top:8px;">Generate Session QR</button>
+          </div>
+          <div id="qr-container" style="margin-top:12px; text-align:center; display:none;">
+            <div id="qrcode"></div>
+            <p class="muted">Click QR to enlarge</p>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h4>End Session</h4>
+          <p class="muted">Close the current attendance session.</p>
+          <div style="margin-top:12px">
+            <button id="endSessionBtn" class="btn btn-danger">End Session</button>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h4>View Attendance</h4>
+          <p class="muted">Monitor who has scanned the session QR in real time.</p>
+          <div style="margin-top:12px">
+            <button class="btn btn-outline">View Attendance</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Attendance (Real-time preview)</h3>
+      <div class="muted">This is a static preview of the attendance list for design purposes.</div>
+      <table class="table">
+        <thead><tr><th>#</th><th>Name</th><th>ID</th><th>Time</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Juan Dela Cruz</td><td>STU-001</td><td>08:02 AM</td></tr>
+          <tr><td>2</td><td>Maria Santos</td><td>STU-002</td><td>08:05 AM</td></tr>
+          <tr><td>3</td><td>Pedro Garcia</td><td>STU-003</td><td>08:09 AM</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- QR Popup -->
+<div id="qr-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items:center; justify-content:center; z-index:1000;">
+  <div id="popup-content" style="background:#fff; padding:20px; border-radius:12px;">
+    <div id="popup-qr"></div>
+  </div>
+</div>
+
+<footer class="footer">&copy; <span id="year2">2025</span> Smart Attendance Checker</footer>
+
+<script>
+document.getElementById('year2').textContent = new Date().getFullYear();
+
+// Auto-fill date/time
+const now = new Date();
+document.getElementById('classDate').value = now.toISOString().split('T')[0];
+document.getElementById('classTime').value = now.toTimeString().slice(0,5);
+
+let qrcodeInstance = null;
+let activeSession = false;
+let currentSessionData = "";
+
+// Generate QR
+document.getElementById("generateBtn").addEventListener("click", () => {
+  const className = document.getElementById("className").value.trim();
+  const classDate = document.getElementById("classDate").value;
+  const classTime = document.getElementById("classTime").value;
+
+  if (!className) {
+    alert("Please enter class name.");
+    return;
+  }
+
+  const sessionId = "SESSION-" + Date.now();
+  currentSessionData = JSON.stringify({
+    sessionId,
+    className,
+    classDate,
+    classTime
+  });
+
+  // Reset QR completely
+  const qrDiv = document.getElementById("qrcode");
+  qrDiv.innerHTML = "";
+  qrcodeInstance = new QRCode(qrDiv, {
+    text: currentSessionData,
+    width: 180,
+    height: 180
+  });
+
+  document.getElementById("qr-container").style.display = "block";
+  document.getElementById("session-status").innerHTML = "<span style='color:lime;'> Session Active</span>";
+  document.getElementById("last-generated").textContent = "Last generated: " + new Date().toLocaleString();
+  activeSession = true;
+});
+
+// End session
+document.getElementById("endSessionBtn").addEventListener("click", () => {
+  const qrDiv = document.getElementById("qrcode");
+  qrDiv.innerHTML = "";
+  document.getElementById("qr-container").style.display = "none";
+  document.getElementById("session-status").innerHTML = "<span style='color:red;'> Session Ended</span>";
+  activeSession = false;
+  currentSessionData = "";
+
+  // TODO: Send endSession to database later
+});
+
+// QR popup enlarge
+document.getElementById("qrcode").addEventListener("click", () => {
+  if (!activeSession || !currentSessionData) return;
+  const popup = document.getElementById("qr-popup");
+  popup.style.display = "flex";
+  document.getElementById("popup-qr").innerHTML = "";
+  new QRCode(document.getElementById("popup-qr"), {
+    text: currentSessionData,
+    width: 350,
+    height: 350
+  });
+});
+
+document.getElementById("qr-popup").addEventListener("click", () => {
+  document.getElementById("qr-popup").style.display = "none";
+  document.getElementById("popup-qr").innerHTML = "";
+});
+</script>
+</body>
+</html>

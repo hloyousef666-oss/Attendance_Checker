@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Smart Attendance Checker — Login</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* Centering fix */
+body.page-bg {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main.container.center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Role buttons */
+.role-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.role-buttons .btn {
+  background-color: #1e1e1e;
+  color: #fff;
+  border: 2px solid #333;
+  padding: 12px 20px;
+  border-radius: 8px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.role-buttons .btn:hover {
+  background-color: #2b2b2b;
+}
+
+.role-buttons .btn.active {
+  border-color: #0078d7;
+  background-color: #005fa3;
+  color: #fff;
+  transform: scale(1.05);
+}
+</style>
+</head>
+
+<body class="page-bg">
+<header class="nav">
+  <div class="nav-left">
+    <div class="logo">SA</div>
+    <div class="brand-text">
+      <div class="brand-title">Smart Attendance Checker</div>
+      <div class="brand-sub">Design Prototype</div>
+    </div>
+  </div>
+</header>
+
+<main class="container center">
+  <div class="card auth-card">
+    <h1 class="h1">Welcome</h1>
+    <p class="muted">Choose your role to continue.</p>
+
+    <div class="role-buttons">
+      <button type="button" class="btn role-btn" id="teacherBtn">Login as Teacher</button>
+      <button type="button" class="btn role-btn" id="studentBtn">Login as Student</button>
+    </div>
+
+
+    <form class="login-form" id="loginForm">
+      <label class="label">Email</label>
+      <input class="input" type="email" placeholder="you@example.com" required />
+      <label class="label">Password</label>
+      <input class="input" type="password" placeholder="••••••••" required />
+      <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+        <button type="submit" class="btn btn-primary">Sign In</button>
+    
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer class="footer">&copy; <span id="year">2025</span> Smart Attendance Checker </footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+let selectedRole = null;
+const roleButtons = document.querySelectorAll('.role-btn');
+
+// Highlight role when clicked
+roleButtons.forEach(btn => {
+  btn.addEventListener('click', e => {
+    roleButtons.forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    selectedRole = e.target.id === 'teacherBtn' ? 'teacher' : 'student';
+  });
+});
+
+// Handle sign in
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!selectedRole) {
+    alert('Please select your role first.');
+    return;
+  }
+
+  if (selectedRole === 'teacher') {
+    window.location.href = 'teacher.html';
+  } else if (selectedRole === 'student') {
+    window.location.href = 'student.html';
+  }
+});
+</script>
+</body>
+</html>
